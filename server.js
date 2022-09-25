@@ -21,8 +21,10 @@ if (!process.env.DISABLE_XORIGIN) {
   });
 };
 
+
+
 app.get("/", function(req, res) {
-  res.send("Hello Express");
+  res.sendFile(__dirname + "/views/index.html");
 });
 
 var port = process.env.PORT || 3000;
