@@ -7,6 +7,7 @@ var bGround = require('fcc-express-bground');
 var myApp = require('./myApp');
 var express = require('express');
 var app = express();
+var bodyParser = require("body-parser");
 
 if (!process.env.DISABLE_XORIGIN) {
   app.use(function(req, res, next) {
@@ -21,6 +22,8 @@ if (!process.env.DISABLE_XORIGIN) {
   });
 };
 
+app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.json());
 
 app.use("/public", express.static(__dirname + "/public"));
 
@@ -30,11 +33,53 @@ app.get("/", function(req, res) {
   
 });
 
-app.get("/json", (req, res) => {
+app.use(function middleware(req, res, next) {
+  let log = req.method + " " + req.path + " - " + req.ip;
+  console.log("log", log);
+  next();
+});
+
+app.get("/now", function middleware(req, res, next) {
+  req. time = new Date().toString();
+  next();
+}, function(req, res) {
   res.json({
-    message: "Hello Json"
+    time: req.time
   });
 });
+
+// app.get("/name", function(req, res) {
+
+//   let firstName = req.query.first;
+//   let lastName = req.query.last;
+//   res.json({
+//     name: `${firstName} ${lastName}`
+//   });
+// });
+
+app.post('/name', function(req, res) {
+  var string = req.body.first + " " + req.body.last;
+  res.json({ name: string });
+})
+
+app.get("/:word/echo", (req, res) => {
+  const { word } = req.params;
+  res.json({
+    echo:  word
+  });
+});
+
+let response ="Hello World";
+
+if(process.env.MESSAGE_STYLE === "uppercase") {
+  response = response.toUpperCase();
+} 
+app.get("/json", (req, res) => {
+  res.json({
+    message: response
+  });
+});
+
 
 var port = process.env.PORT || 3000;
 bGround.setupBackgroundApp(app, myApp, __dirname).listen(port, function(){
